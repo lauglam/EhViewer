@@ -20,26 +20,25 @@ package com.hippo.network;
  * Created by Hippo on 2017/9/4.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import android.content.Context;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import okhttp3.Cookie;
 import okhttp3.HttpUrl;
-import org.joor.Reflect;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
-@Config(manifest = Config.NONE)
-@RunWith(RobolectricTestRunner.class)
+import org.joor.Reflect;
+
+import org.junit.Test;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import org.junit.runner.RunWith;
+
+@RunWith(AndroidJUnit4.class)
 public class CookieRepositoryTest {
 
   private void equals(CookieSet cookieSet, List<Cookie> cookies) {
@@ -65,7 +64,7 @@ public class CookieRepositoryTest {
 
   @Test
   public void testPersistent() {
-    Context app = RuntimeEnvironment.application;
+    Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     HttpUrl urlEh = HttpUrl.parse("http://www.ehviewer.com/");
     Cookie cookieEh1 = new Cookie.Builder()
@@ -119,7 +118,7 @@ public class CookieRepositoryTest {
 
   @Test
   public void testUpdate() {
-    Context app = RuntimeEnvironment.application;
+    Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     HttpUrl urlEh = HttpUrl.parse("http://www.ehviewer.com/");
     Cookie cookieEh1 = new Cookie.Builder()
@@ -154,7 +153,7 @@ public class CookieRepositoryTest {
 
   @Test
   public void testRemoveByExpired() {
-    Context app = RuntimeEnvironment.application;
+    Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     HttpUrl urlEh = HttpUrl.parse("http://www.ehviewer.com/");
     Cookie cookieEh1 = new Cookie.Builder()
@@ -188,7 +187,7 @@ public class CookieRepositoryTest {
 
   @Test
   public void testRemoveByNonPersistent() {
-    Context app = RuntimeEnvironment.application;
+    Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     HttpUrl urlEh = HttpUrl.parse("http://www.ehviewer.com/");
     Cookie cookieEh1 = new Cookie.Builder()
@@ -222,7 +221,7 @@ public class CookieRepositoryTest {
 
   @Test
   public void testGet() throws InterruptedException {
-    Context app = RuntimeEnvironment.application;
+    Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     HttpUrl urlEh1 = HttpUrl.parse("http://www.ehviewer.com/");
     HttpUrl urlEh2 = HttpUrl.parse("http://ehviewer.com/");
@@ -266,7 +265,7 @@ public class CookieRepositoryTest {
 
   @Test
   public void testClear() {
-    Context app = RuntimeEnvironment.application;
+    Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     HttpUrl url = HttpUrl.parse("http://www.ehviewer.com/");
     Cookie cookie = new Cookie.Builder()
@@ -295,7 +294,7 @@ public class CookieRepositoryTest {
 
   @Test
   public void testSort() {
-    Context app = RuntimeEnvironment.application;
+    Context app = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     HttpUrl url = HttpUrl.parse("http://www.ehviewer.com/long/long/long/");
     Cookie cookie1 = new Cookie.Builder()

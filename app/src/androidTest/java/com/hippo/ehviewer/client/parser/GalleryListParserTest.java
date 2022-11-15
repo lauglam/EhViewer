@@ -16,22 +16,21 @@
 
 package com.hippo.ehviewer.client.parser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import com.hippo.ehviewer.client.EhUtils;
-import edu.emory.mathcs.backport.java.util.Arrays;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import okio.BufferedSource;
 import okio.Okio;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.ParameterizedRobolectricTestRunner;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-@RunWith(ParameterizedRobolectricTestRunner.class)
+@RunWith(Parameterized.class)
 public class GalleryListParserTest {
 
   private static final String E_MINIMAL = "GalleryListParserTestEMinimal.html";
@@ -46,7 +45,7 @@ public class GalleryListParserTest {
   private static final String EX_EXTENDED = "GalleryListParserTestExExtended.html";
   private static final String EX_THUMBNAIL = "GalleryListParserTestExThumbnail.html";
 
-  @ParameterizedRobolectricTestRunner.Parameters(name = "{index}-{0}")
+  @Parameters(name = "{index}-{0}")
   public static List data() {
     return Arrays.asList(new Object[][] {
         { E_MINIMAL },

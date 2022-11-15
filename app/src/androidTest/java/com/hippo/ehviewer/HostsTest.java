@@ -20,20 +20,17 @@ package com.hippo.ehviewer;
  * Created by Hippo on 2018/3/22.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import android.util.Pair;
 import java.util.List;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
-@Config(manifest = Config.NONE)
-@RunWith(RobolectricTestRunner.class)
+import static org.junit.Assert.*;
+
+@RunWith(AndroidJUnit4.class)
 public class HostsTest {
 
   @Test
@@ -62,7 +59,7 @@ public class HostsTest {
 
   @Test
   public void testGet() {
-    Hosts hosts = new Hosts(RuntimeEnvironment.application, "hosts.db");
+    Hosts hosts = new Hosts(InstrumentationRegistry.getInstrumentation().getTargetContext(), "hosts.db");
 
     assertEquals(null, hosts.get("ni.hao"));
     hosts.put("ni.hao", "127.0.0.1");
@@ -73,7 +70,7 @@ public class HostsTest {
 
   @Test
   public void testPut() {
-    Hosts hosts = new Hosts(RuntimeEnvironment.application, "hosts.db");
+    Hosts hosts = new Hosts(InstrumentationRegistry.getInstrumentation().getTargetContext(), "hosts.db");
 
     assertEquals(null, hosts.get("ni.hao"));
     assertEquals(true, hosts.put("ni.hao", "127.0.0.1"));
@@ -95,7 +92,7 @@ public class HostsTest {
 
   @Test
   public void testDelete() {
-    Hosts hosts = new Hosts(RuntimeEnvironment.application, "hosts.db");
+    Hosts hosts = new Hosts(InstrumentationRegistry.getInstrumentation().getTargetContext(), "hosts.db");
 
     hosts.put("ni.hao", "127.0.0.1");
     assertEquals("ni.hao/127.0.0.1", hosts.get("ni.hao").toString());
@@ -108,7 +105,7 @@ public class HostsTest {
 
   @Test
   public void testGetAll() {
-    Hosts hosts = new Hosts(RuntimeEnvironment.application, "hosts.db");
+    Hosts hosts = new Hosts(InstrumentationRegistry.getInstrumentation().getTargetContext(), "hosts.db");
 
     List<Pair<String, String>> all = hosts.getAll();
     assertEquals(0, all.size());

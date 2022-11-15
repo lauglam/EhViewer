@@ -20,17 +20,16 @@ package com.hippo.database;
  * Created by Hippo on 2017/9/4.
  */
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
-@Config(manifest = Config.NONE)
-@RunWith(RobolectricTestRunner.class)
+import static org.junit.Assert.*;
+
+@RunWith(AndroidJUnit4.class)
 public class MSQLiteBuilderTest {
 
   @Test

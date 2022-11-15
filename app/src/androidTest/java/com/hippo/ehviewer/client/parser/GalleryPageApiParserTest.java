@@ -16,32 +16,30 @@
 
 package com.hippo.ehviewer.client.parser;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import com.hippo.ehviewer.client.exception.ParseException;
 import java.io.IOException;
 import java.io.InputStream;
 import okio.BufferedSource;
 import okio.Okio;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-@Config(manifest = Config.NONE)
-@RunWith(RobolectricTestRunner.class)
-public class GalleryPageParserTest {
+@RunWith(AndroidJUnit4.class)
+public class GalleryPageApiParserTest {
 
   @Test
   public void testParse() throws IOException, ParseException {
-    InputStream resource = GalleryPageParserTest.class.getResourceAsStream("GalleryPageParserTest.html");
+    InputStream resource = GalleryPageApiParserTest.class.getResourceAsStream("GalleryPageApiParserTest.json");
     BufferedSource source = Okio.buffer(Okio.source(resource));
     String body = source.readUtf8();
 
-    GalleryPageParser.Result result = GalleryPageParser.parse(body);
-    assertEquals("http://108.6.41.160:2688/h/5c63e9a5810d8d9c873d9e0dfaadc4a0d70a13bf-188862-1280-879-jpg/keystamp=1550291700-145ecbbb10;fileindex=67290651;xres=1280/10.jpg", result.imageUrl);
-    assertEquals("26664-430636", result.skipHathKey);
-    assertEquals("https://e-hentai.org/fullimg.php?gid=1363978&page=10&key=qt2hwrx98a4", result.originImageUrl);
-    assertEquals("ghz0e5m98a4", result.showKey);
+    GalleryPageApiParser.Result result = GalleryPageApiParser.parse(body);
+    assertEquals("http://69.30.203.46:60111/h/6047fa2f194742f6fa541ec1f631ec3ab438f960-183117-1280-960-jpg/keystamp=1550291100-c4438f48c8;fileindex=67379169;xres=1280/Valentines_2019_002.jpg", result.imageUrl);
+    assertEquals("15151-430636", result.skipHathKey);
+    assertEquals("https://e-hentai.org/fullimg.php?gid=1366222&page=3&key=puxxvyg98a4", result.originImageUrl);
   }
 }

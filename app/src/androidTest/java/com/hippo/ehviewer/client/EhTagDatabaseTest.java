@@ -16,20 +16,18 @@
 
 package com.hippo.ehviewer.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import okio.BufferedSource;
 import okio.Okio;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
-@Config(manifest = Config.NONE)
-@RunWith(RobolectricTestRunner.class)
+import org.junit.Test;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.runner.RunWith;
+
+@RunWith(AndroidJUnit4.class)
 public class EhTagDatabaseTest {
 
   @Test
