@@ -15,7 +15,7 @@ An E-Hentai Application for Android.
 
 3. 将白E的收藏、历史记录等导入导出，再在另一些版本的EhViewer中导入（如：[Ehviewer_CN_SXJ](https://github.com/xiaojieonly/Ehviewer_CN_SXJ)），这个在应用的**设置**->**高级**中可以操作，这里不在赘述。
 
-## 迁移下载数据
+## 一、迁移下载数据
 
 对下载数据进行导出，因为白E存储数据的位置是`/sdcard/Android/data/io.github.nekoinverter.ehviewer/files/download`文件夹内，所以转移出来比较麻烦，这里使用adb工具进行导出。
 
@@ -60,6 +60,44 @@ An E-Hentai Application for Android.
 `sudo adb push /mnt/hgfs/你的共享目录名/download /sdcard/EhViewer/`
 
 建议使用[Ehviewer_CN_SXJ](https://github.com/xiaojieonly/Ehviewer_CN_SXJ)这一版本，因为这个版本的下载目录在外层`/sdcard/EhViewer`下，以后导出也不需要用到Linux环境
+
+## 二、导入收藏/历史记录时出现“无法读取文件”
+
+很可能出现在不同版本之间导出导入时发生，是导入数据文件的版本过高造成的。
+
+### 1. 导出两个版本数据文件
+
+假设从绿E导出，然后导入到白E。
+
+到白E中导出一个空白的数据文件作为对比数据库
+
+复制两个数据文件到桌面
+
+### 2. 下载数据库管理工具[DBeaver](https://dbeaver.io/download/)
+
+安装后分别链接两个数据库，数据库类型为`SQLiete`
+
+右键数据库，SQL编辑器，打开编辑器面板，输入：
+
+`PRAGMA user_version`
+
+查看两个数据库版本是否一致，一般导入数据库的版本会比较高
+
+### 3. 修改数据库
+
+比较两个数据库之间的差异（例如表的数量/表结构/表字段）
+
+将需要导入的数据库修改至与对比数据库一致（也就是符合导入标准）
+
+### 4. 修改版本
+
+消除导入数据库的差异之后，执行命令更改数据库版本
+
+`PRAGMA user_version = 对比数据库的版本号`
+
+### 5. 最后
+
+复制进手机，再进行一次导入即可
 
 # Thanks
 
