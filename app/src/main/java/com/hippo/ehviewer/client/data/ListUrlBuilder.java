@@ -48,9 +48,7 @@ public class ListUrlBuilder implements Cloneable, Parcelable {
     public static final int MODE_IMAGE_SEARCH = 0x4;
     public static final int MODE_SUBSCRIPTION = 0x5;
     public static final int MODE_TOPLIST = 0x6;
-    public static final int DEFAULT_ADVANCE = AdvanceSearchTable.SNAME | AdvanceSearchTable.STAGS;
-    public static final int DEFAULT_MIN_RATING = 2;
-    public static final Creator<ListUrlBuilder> CREATOR = new Creator<ListUrlBuilder>() {
+    public static final Creator<ListUrlBuilder> CREATOR = new Creator<>() {
         @Override
         public ListUrlBuilder createFromParcel(Parcel source) {
             return new ListUrlBuilder(source);
@@ -401,39 +399,9 @@ public class ListUrlBuilder implements Cloneable, Parcelable {
                         enableAdvanceSearch = true;
                     }
                     break;
-                case "f_sname":
-                    if ("on".equals(value)) {
-                        advanceSearch |= AdvanceSearchTable.SNAME;
-                    }
-                    break;
-                case "f_stags":
-                    if ("on".equals(value)) {
-                        advanceSearch |= AdvanceSearchTable.STAGS;
-                    }
-                    break;
-                case "f_sdesc":
-                    if ("on".equals(value)) {
-                        advanceSearch |= AdvanceSearchTable.SDESC;
-                    }
-                    break;
-                case "f_storr":
-                    if ("on".equals(value)) {
-                        advanceSearch |= AdvanceSearchTable.STORR;
-                    }
-                    break;
                 case "f_sto":
                     if ("on".equals(value)) {
                         advanceSearch |= AdvanceSearchTable.STO;
-                    }
-                    break;
-                case "f_sdt1":
-                    if ("on".equals(value)) {
-                        advanceSearch |= AdvanceSearchTable.SDT1;
-                    }
-                    break;
-                case "f_sdt2":
-                    if ("on".equals(value)) {
-                        advanceSearch |= AdvanceSearchTable.SDT2;
                     }
                     break;
                 case "f_sh":
@@ -547,19 +515,6 @@ public class ListUrlBuilder implements Cloneable, Parcelable {
                 // Advance search
                 if (mAdvanceSearch != -1) {
                     ub.addQuery("advsearch", "1");
-                    if ((mAdvanceSearch & AdvanceSearchTable.SNAME) != 0)
-                        ub.addQuery("f_sname", "on");
-                    if ((mAdvanceSearch & AdvanceSearchTable.STAGS) != 0)
-                        ub.addQuery("f_stags", "on");
-                    if ((mAdvanceSearch & AdvanceSearchTable.SDESC) != 0)
-                        ub.addQuery("f_sdesc", "on");
-                    if ((mAdvanceSearch & AdvanceSearchTable.STORR) != 0)
-                        ub.addQuery("f_storr", "on");
-                    if ((mAdvanceSearch & AdvanceSearchTable.STO) != 0) ub.addQuery("f_sto", "on");
-                    if ((mAdvanceSearch & AdvanceSearchTable.SDT1) != 0)
-                        ub.addQuery("f_sdt1", "on");
-                    if ((mAdvanceSearch & AdvanceSearchTable.SDT2) != 0)
-                        ub.addQuery("f_sdt2", "on");
                     if ((mAdvanceSearch & AdvanceSearchTable.SH) != 0) ub.addQuery("f_sh", "on");
                     if ((mAdvanceSearch & AdvanceSearchTable.SFL) != 0) ub.addQuery("f_sfl", "on");
                     if ((mAdvanceSearch & AdvanceSearchTable.SFU) != 0) ub.addQuery("f_sfu", "on");
