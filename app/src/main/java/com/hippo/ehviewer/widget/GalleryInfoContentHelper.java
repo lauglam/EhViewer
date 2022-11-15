@@ -26,13 +26,23 @@ import com.hippo.ehviewer.client.data.GalleryInfo;
 import com.hippo.widget.ContentLayout;
 import com.hippo.yorozuya.IntIdGenerator;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public abstract class GalleryInfoContentHelper extends ContentLayout.ContentHelper<GalleryInfo> {
+    public int maxGid = -1;
+    public int minGid = -1;
+    public String jumpTo = null;
 
     private static final String KEY_DATA_MAP = "data_map";
+    private static final String KEY_MAX_GID = "max_gid";
+    private static final String KEY_MIN_GID = "min_gid";
+    public static final String KEY_NEXT_PAGE = "next_page";
     private final FavouriteStatusRouter.Listener listener;
     @SuppressLint("UseSparseArrays")
     private Map<Long, GalleryInfo> map = new HashMap<>();
@@ -59,6 +69,12 @@ public abstract class GalleryInfoContentHelper extends ContentLayout.ContentHelp
     @Override
     protected void onAddData(List<GalleryInfo> data) {
         for (GalleryInfo info : data) {
+            if (maxGid == -1)
+                maxGid = (int) info.gid;
+            if (minGid == -1)
+                minGid = (int) info.gid;
+            maxGid = (int) Math.max(maxGid, info.gid);
+            minGid = (int) Math.min(minGid, info.gid);
             map.put(info.gid, info);
         }
     }
@@ -78,6 +94,14 @@ public abstract class GalleryInfoContentHelper extends ContentLayout.ContentHelp
     @Override
     protected void onClearData() {
         map.clear();
+        maxGid = -1;
+        minGid = -1;
+    }
+
+    @Override
+    protected void beforeRefresh() {
+        maxGid = -1;
+        minGid = -1;
     }
 
     @Override
@@ -88,6 +112,8 @@ public abstract class GalleryInfoContentHelper extends ContentLayout.ContentHelp
         FavouriteStatusRouter router = EhApplication.getFavouriteStatusRouter();
         int id = router.saveDataMap(map);
         bundle.putInt(KEY_DATA_MAP, id);
+        bundle.putInt(KEY_MIN_GID, minGid);
+        bundle.putInt(KEY_MAX_GID, maxGid);
 
         return bundle;
     }
@@ -104,7 +130,23 @@ public abstract class GalleryInfoContentHelper extends ContentLayout.ContentHelp
                 this.map = map;
             }
         }
+        minGid = bundle.getInt(KEY_MIN_GID);
+        maxGid = bundle.getInt(KEY_MAX_GID);
 
         return super.restoreInstanceState(state);
+    }
+
+    public void goTo(long time) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(time);
+        Date date = calendar.getTime();
+        var format = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        jumpTo = format.format(date);
+        doRefresh();
+    }
+
+    public void goToPage(int page) {
+        jumpTo = String.valueOf(page);
+        doRefresh();
     }
 }

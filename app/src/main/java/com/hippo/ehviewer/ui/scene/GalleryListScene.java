@@ -61,6 +61,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.h6ah4i.android.widget.advrecyclerview.animator.DraggableItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
@@ -505,6 +506,12 @@ public final class GalleryListScene extends BaseScene
             mFabLayout.getSecondaryFabAt(0).setImageResource(isTopList ? R.drawable.ic_baseline_format_list_numbered_24 : R.drawable.v_magnify_x24);
         }
 
+        if (ListUrlBuilder.MODE_WHATS_HOT == builder.getMode()) {
+            mFabLayout.setSecondaryFabVisibilityAt(1, false);
+        } else {
+            mFabLayout.setSecondaryFabVisibilityAt(1, true);
+        }
+
         // Update normal search mode
         mSearchLayout.setNormalSearchMode(builder.getMode() == ListUrlBuilder.MODE_SUBSCRIPTION
                 ? R.id.search_subscription_search
@@ -933,36 +940,47 @@ public final class GalleryListScene extends BaseScene
             return;
         }
 
-        final int page = mHelper.getPageForTop();
-        final int pages = mHelper.getPages();
-        String hint = getString(R.string.go_to_hint, page + 1, pages);
-        final EditTextDialogBuilder builder = new EditTextDialogBuilder(context, null, hint);
-        builder.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-        final AlertDialog dialog = builder.setTitle(R.string.go_to)
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
-        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
-            if (null == mHelper) {
-                dialog.dismiss();
-                return;
-            }
+        if (ListUrlBuilder.MODE_TOPLIST == mUrlBuilder.getMode()) {
+            final int page = (mHelper.getPageForTop() == 0 ? mHelper.pgCounter : mHelper.getPageForTop()) + 1;
+            final int pages = 200;
+            String hint = getString(R.string.go_to_hint, page, pages);
+            final EditTextDialogBuilder builder = new EditTextDialogBuilder(context, null, hint);
+            builder.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            final AlertDialog dialog = builder.setTitle(R.string.go_to)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+                if (null == mHelper) {
+                    dialog.dismiss();
+                    return;
+                }
 
-            String text = builder.getText().trim();
-            int goTo;
-            try {
-                goTo = Integer.parseInt(text) - 1;
-            } catch (NumberFormatException e) {
-                builder.setError(getString(R.string.error_invalid_number));
-                return;
-            }
-            if (goTo < 0 || goTo >= pages) {
-                builder.setError(getString(R.string.error_out_of_range));
-                return;
-            }
-            builder.setError(null);
-            mHelper.goTo(goTo);
-            dialog.dismiss();
-        });
+                String text = builder.getText().trim();
+                int goTo;
+                try {
+                    goTo = Integer.parseInt(text);
+                } catch (NumberFormatException e) {
+                    builder.setError(getString(R.string.error_invalid_number));
+                    return;
+                }
+                if (goTo <= 0 || goTo > pages) {
+                    builder.setError(getString(R.string.error_out_of_range));
+                    return;
+                }
+                builder.setError(null);
+                mHelper.goToPage(goTo);
+                dialog.dismiss();
+            });
+        } else {
+            var datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText(R.string.go_to)
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                    .build();
+            datePicker.show(requireActivity().getSupportFragmentManager(), "date-picker");
+            datePicker.addOnPositiveButtonClickListener(v -> {
+                mHelper.goTo(v);
+            });
+        }
     }
 
     @Override
@@ -1464,7 +1482,7 @@ public final class GalleryListScene extends BaseScene
                     ? R.string.gallery_list_empty_hit_subscription
                     : R.string.gallery_list_empty_hit);
             mHelper.setEmptyString(emptyString);
-            mHelper.onGetPageData(taskId, result.pages, result.nextPage, result.galleryInfoList);
+            mHelper.onGetPageData(taskId, CommonOperations.getPagesForFounds(result.founds, 25), mHelper.pgCounter + 1, result.galleryInfoList);
         }
     }
 
@@ -1637,7 +1655,7 @@ public final class GalleryListScene extends BaseScene
                     }
 
                     mUrlBuilder.set(mQuickSearchList.get(position));
-                    mUrlBuilder.setPageIndex(0);
+                    mUrlBuilder.setNextGid(0);
                     onUpdateUrlBuilder();
                     mHelper.refresh();
                     setState(STATE_NORMAL);
@@ -1682,7 +1700,7 @@ public final class GalleryListScene extends BaseScene
                     }
 
                     mUrlBuilder.setKeyword(String.valueOf(keywords[position]));
-                    mUrlBuilder.setPageIndex(0);
+                    mUrlBuilder.setNextGid(0);
                     onUpdateUrlBuilder();
                     mHelper.refresh();
                     setState(STATE_NORMAL);
@@ -1850,15 +1868,29 @@ public final class GalleryListScene extends BaseScene
     }
 
     private class GalleryListHelper extends GalleryInfoContentHelper {
+        public int pgCounter = 0;
 
         @Override
         protected void getPageData(int taskId, int type, int page) {
+            pgCounter = page;
             MainActivity activity = getMainActivity();
             if (null == activity || null == mClient || null == mUrlBuilder) {
                 return;
             }
 
-            mUrlBuilder.setPageIndex(page);
+            if (page != 0)
+                mUrlBuilder.setNextGid(mIsTopList ? page : minGid);
+            else
+                mUrlBuilder.setNextGid(0);
+
+            if (jumpTo != null && mIsTopList) {
+                pgCounter = Integer.parseInt(jumpTo) - 1;
+                mUrlBuilder.setNextGid(pgCounter);
+            }
+
+            mUrlBuilder.setJumpTo(jumpTo);
+            jumpTo = null;
+
             if (ListUrlBuilder.MODE_IMAGE_SEARCH == mUrlBuilder.getMode()) {
                 EhRequest request = new EhRequest();
                 request.setMethod(EhClient.METHOD_IMAGE_SEARCH);

@@ -483,24 +483,9 @@ public class ContentLayout extends FrameLayout {
                             mData.clear();
                             onClearData();
                             notifyDataSetChanged();
-
-                            if (true || mEndPage >= mPages) { // Not found
-                                // Ui change, show empty string
-                                mRefreshLayout.setRefreshing(false);
-                                mBottomProgress.hide();
-                                showEmptyString();
-                            } else {
-                                // Ui change, show progress bar
-                                mRefreshLayout.setRefreshing(false);
-                                mBottomProgress.hide();
-                                showProgressBar();
-
-                                // Get next page
-                                mCurrentTaskId = mIdGenerator.nextId();
-                                mCurrentTaskType = TYPE_NEXT_PAGE_KEEP_POS;
-                                mCurrentTaskPage = mEndPage;
-                                getPageData(mCurrentTaskId, mCurrentTaskType, mCurrentTaskPage);
-                            }
+                            mRefreshLayout.setRefreshing(false);
+                            mBottomProgress.hide();
+                            showEmptyString();
                         } else {
                             mData.clear();
                             onClearData();
@@ -534,33 +519,24 @@ public class ContentLayout extends FrameLayout {
                         // assert mStartPage >= 0
 
                         if (data.isEmpty()) {
-                            if (true || mStartPage <= 0) { // OK, that's all
-                                if (mData.isEmpty()) {
-                                    // Ui change, show empty string
-                                    mRefreshLayout.setRefreshing(false);
-                                    mBottomProgress.hide();
-                                    showEmptyString();
-                                } else {
-                                    // Ui change, show content
-                                    mRefreshLayout.setRefreshing(false);
-                                    mBottomProgress.hide();
-                                    showContent();
-
-                                    if (mCurrentTaskType == TYPE_PRE_PAGE && mRecyclerView.isAttachedToWindow()) {
-                                        // RecyclerView scroll, to top
-                                        mRecyclerView.stopScroll();
-                                        LayoutManagerUtils.scrollToPositionWithOffset(mRecyclerView.getLayoutManager(), 0, 0);
-                                        onScrollToPosition(0);
-                                    }
-                                }
+                            // OK, that's all
+                            if (mData.isEmpty()) {
+                                // Ui change, show empty string
+                                mRefreshLayout.setRefreshing(false);
+                                mBottomProgress.hide();
+                                showEmptyString();
                             } else {
-                                // Keep UI
+                                // Ui change, show content
+                                mRefreshLayout.setRefreshing(false);
+                                mBottomProgress.hide();
+                                showContent();
 
-                                // Get previous
-                                mCurrentTaskId = mIdGenerator.nextId();
-                                // Keep mCurrentTaskType
-                                mCurrentTaskPage = mStartPage - 1;
-                                getPageData(mCurrentTaskId, mCurrentTaskType, mCurrentTaskPage);
+                                if (mCurrentTaskType == TYPE_PRE_PAGE && mRecyclerView.isAttachedToWindow()) {
+                                    // RecyclerView scroll, to top
+                                    mRecyclerView.stopScroll();
+                                    LayoutManagerUtils.scrollToPositionWithOffset(mRecyclerView.getLayoutManager(), 0, 0);
+                                    onScrollToPosition(0);
+                                }
                             }
                         } else {
                             mData.addAll(0, data);
@@ -597,33 +573,24 @@ public class ContentLayout extends FrameLayout {
                         mPages = Math.max(mEndPage, pages);
 
                         if (data.isEmpty()) {
-                            if (true || mEndPage >= mPages) { // OK, that's all
-                                if (mData.isEmpty()) {
-                                    // Ui change, show empty string
-                                    mRefreshLayout.setRefreshing(false);
-                                    mBottomProgress.hide();
-                                    showEmptyString();
-                                } else {
-                                    // Ui change, show content
-                                    mRefreshLayout.setRefreshing(false);
-                                    mBottomProgress.hide();
-                                    showContent();
-
-                                    if (mCurrentTaskType == TYPE_NEXT_PAGE && mRecyclerView.isAttachedToWindow()) {
-                                        // RecyclerView scroll
-                                        mRecyclerView.stopScroll();
-                                        LayoutManagerUtils.scrollToPositionWithOffset(mRecyclerView.getLayoutManager(), oldDataSize, 0);
-                                        onScrollToPosition(oldDataSize);
-                                    }
-                                }
+                            // OK, that's all
+                            if (mData.isEmpty()) {
+                                // Ui change, show empty string
+                                mRefreshLayout.setRefreshing(false);
+                                mBottomProgress.hide();
+                                showEmptyString();
                             } else {
-                                // Keep UI
+                                // Ui change, show content
+                                mRefreshLayout.setRefreshing(false);
+                                mBottomProgress.hide();
+                                showContent();
 
-                                // Get next page
-                                mCurrentTaskId = mIdGenerator.nextId();
-                                // Keep mCurrentTaskType
-                                mCurrentTaskPage = mEndPage;
-                                getPageData(mCurrentTaskId, mCurrentTaskType, mCurrentTaskPage);
+                                if (mCurrentTaskType == TYPE_NEXT_PAGE && mRecyclerView.isAttachedToWindow()) {
+                                    // RecyclerView scroll
+                                    mRecyclerView.stopScroll();
+                                    LayoutManagerUtils.scrollToPositionWithOffset(mRecyclerView.getLayoutManager(), oldDataSize, 0);
+                                    onScrollToPosition(oldDataSize);
+                                }
                             }
                         } else {
                             mData.addAll(data);
@@ -660,23 +627,11 @@ public class ContentLayout extends FrameLayout {
                             onClearData();
                             notifyDataSetChanged();
 
-                            if (true || mEndPage >= mPages) { // Not found
-                                // Ui change, show empty string
-                                mRefreshLayout.setRefreshing(false);
-                                mBottomProgress.hide();
-                                showEmptyString();
-                            } else {
-                                // Ui change, show progress bar
-                                mRefreshLayout.setRefreshing(false);
-                                mBottomProgress.hide();
-                                showProgressBar();
-
-                                // Get next page
-                                mCurrentTaskId = mIdGenerator.nextId();
-                                mCurrentTaskType = TYPE_NEXT_PAGE_KEEP_POS;
-                                mCurrentTaskPage = mEndPage;
-                                getPageData(mCurrentTaskId, mCurrentTaskType, mCurrentTaskPage);
-                            }
+                            // Not found
+                            // Ui change, show empty string
+                            mRefreshLayout.setRefreshing(false);
+                            mBottomProgress.hide();
+                            showEmptyString();
                         } else {
                             mData.clear();
                             onClearData();
@@ -774,6 +729,9 @@ public class ContentLayout extends FrameLayout {
             mViewTransition.showView(0);
         }
 
+        protected void beforeRefresh() {
+        }
+
         private boolean isContentShowing() {
             return mViewTransition.getShownViewIndex() == 0;
         }
@@ -824,7 +782,8 @@ public class ContentLayout extends FrameLayout {
             getPageData(mCurrentTaskId, mCurrentTaskType, mCurrentTaskPage);
         }
 
-        private void doRefresh() {
+        protected void doRefresh() {
+            beforeRefresh();
             mCurrentTaskId = mIdGenerator.nextId();
             mCurrentTaskType = TYPE_REFRESH;
             mCurrentTaskPage = 0;

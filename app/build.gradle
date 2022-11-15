@@ -34,8 +34,8 @@ android {
         applicationId "io.github.lauglam.ehviewer"
         minSdkVersion 23
         targetSdkVersion 32
-        versionCode 100020
-        versionName "1.7.26.10"
+        versionCode 100030
+        versionName "1.7.27.0"
         resConfigs 'zh', 'zh-rCN', 'zh-rHK', 'zh-rTW', 'es', 'ja', 'ko', 'fr', 'de', 'th'
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

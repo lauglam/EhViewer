@@ -24,10 +24,9 @@ import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.text.InputType;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
-import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -48,9 +47,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.hippo.annotation.Implemented;
-import com.hippo.app.EditTextDialogBuilder;
 import com.hippo.drawable.AddDeleteDrawable;
 import com.hippo.drawable.DrawerArrowDrawable;
 import com.hippo.easyrecyclerview.EasyRecyclerView;
@@ -66,12 +65,12 @@ import com.hippo.ehviewer.client.EhRequest;
 import com.hippo.ehviewer.client.EhUrl;
 import com.hippo.ehviewer.client.data.FavListUrlBuilder;
 import com.hippo.ehviewer.client.data.GalleryInfo;
-import com.hippo.ehviewer.client.parser.FavoritesParser;
 import com.hippo.ehviewer.ui.CommonOperations;
 import com.hippo.ehviewer.ui.MainActivity;
 import com.hippo.ehviewer.ui.annotation.DrawerLifeCircle;
 import com.hippo.ehviewer.ui.annotation.ViewLifeCircle;
 import com.hippo.ehviewer.ui.annotation.WholeLifeCircle;
+import com.hippo.ehviewer.client.parser.FavoritesParser;
 import com.hippo.ehviewer.widget.GalleryInfoContentHelper;
 import com.hippo.ehviewer.widget.SearchBar;
 import com.hippo.scene.Announcer;
@@ -692,35 +691,13 @@ public class FavoritesScene extends BaseScene implements
             return;
         }
 
-        final int page = mHelper.getPageForTop();
-        final int pages = mHelper.getPages();
-        String hint = getString(R.string.go_to_hint, page + 1, pages);
-        final EditTextDialogBuilder builder = new EditTextDialogBuilder(context, null, hint);
-        builder.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-        final AlertDialog dialog = builder.setTitle(R.string.go_to)
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
-        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
-            if (null == mHelper) {
-                dialog.dismiss();
-                return;
-            }
-
-            String text = builder.getText().trim();
-            int goTo;
-            try {
-                goTo = Integer.parseInt(text) - 1;
-            } catch (NumberFormatException e) {
-                builder.setError(getString(R.string.error_invalid_number));
-                return;
-            }
-            if (goTo < 0 || goTo >= pages) {
-                builder.setError(getString(R.string.error_out_of_range));
-                return;
-            }
-            builder.setError(null);
-            mHelper.goTo(goTo);
-            dialog.dismiss();
+        var datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText(R.string.go_to)
+                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .build();
+        datePicker.show(requireActivity().getSupportFragmentManager(), "date-picker");
+        datePicker.addOnPositiveButtonClickListener(v -> {
+            mHelper.goTo(v);
         });
     }
 
@@ -898,7 +875,14 @@ public class FavoritesScene extends BaseScene implements
             }
 
             updateSearchBar();
-            mHelper.onGetPageData(taskId, result.pages, result.nextPage, result.galleryInfoList);
+            int pages = 0;
+            assert mUrlBuilder != null;
+            if (FavListUrlBuilder.isValidFavCat(mUrlBuilder.getFavCat()))
+                pages = CommonOperations.getPagesForFounds(mFavCountArray[mUrlBuilder.getFavCat()], 50);
+            else if (mUrlBuilder.getFavCat() == FavListUrlBuilder.FAV_CAT_ALL)
+                pages = CommonOperations.getPagesForFounds(mFavCountSum, 50);
+            mHelper.nextPg = result.nextPage;
+            mHelper.onGetPageData(taskId, pages, mHelper.pgCounter + 1, result.galleryInfoList);
 
             if (mDrawerAdapter != null) {
                 mDrawerAdapter.notifyDataSetChanged();
@@ -1217,6 +1201,8 @@ public class FavoritesScene extends BaseScene implements
     }
 
     private class FavoritesHelper extends GalleryInfoContentHelper {
+        public int pgCounter = 0;
+        public String nextPg = null;
 
         @Override
         protected void getPageData(final int taskId, int type, int page) {
@@ -1224,6 +1210,7 @@ public class FavoritesScene extends BaseScene implements
             if (null == activity || null == mUrlBuilder || null == mClient) {
                 return;
             }
+            pgCounter = page;
 
             if (mEnableModify) {
                 mEnableModify = false;
@@ -1263,7 +1250,7 @@ public class FavoritesScene extends BaseScene implements
                         url = mUrlBuilder.build();
                     }
 
-                    mUrlBuilder.setIndex(page);
+                    mUrlBuilder.setNext(nextPg);
                     EhRequest request = new EhRequest();
                     request.setMethod(EhClient.METHOD_MODIFY_FAVORITES);
                     request.setCallback(new GetFavoritesListener(getContext(),
@@ -1276,7 +1263,7 @@ public class FavoritesScene extends BaseScene implements
                 final String keyword = mUrlBuilder.getKeyword();
                 SimpleHandler.getInstance().post(() -> onGetFavoritesLocal(keyword, taskId));
             } else {
-                mUrlBuilder.setIndex(page);
+                mUrlBuilder.setNext(nextPg);
                 String url = mUrlBuilder.build();
                 EhRequest request = new EhRequest();
                 request.setMethod(EhClient.METHOD_GET_FAVORITES);
@@ -1338,6 +1325,32 @@ public class FavoritesScene extends BaseScene implements
                     mSearchBarMover.showSearchBar();
                 }
             }
+        }
+
+        @Override
+        protected void onClearData() {
+            super.onClearData();
+            nextPg = null;
+        }
+
+        @Override
+        protected void beforeRefresh() {
+            super.beforeRefresh();
+            nextPg = null;
+        }
+
+        @Override
+        protected Parcelable saveInstanceState(Parcelable superState) {
+            Bundle bundle = (Bundle) super.saveInstanceState(superState);
+            bundle.putString(KEY_NEXT_PAGE, nextPg);
+            return bundle;
+        }
+
+        @Override
+        protected Parcelable restoreInstanceState(Parcelable state) {
+            Bundle bundle = (Bundle) state;
+            nextPg = bundle.getString(KEY_NEXT_PAGE);
+            return super.restoreInstanceState(state);
         }
     }
 }
