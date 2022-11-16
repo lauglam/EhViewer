@@ -379,6 +379,11 @@ public class FavoritesScene extends BaseScene implements
             mSearchBar.setEditTextHint(getString(R.string.favorites_search_bar_hint, favCatName));
         }
 
+        // Hide jump FloatingActionButton on local favorite category
+        if (FavListUrlBuilder.FAV_CAT_LOCAL == favCat) {
+            mFabLayout.setSecondaryFabVisibilityAt(1, false);
+        }
+
         mOldFavCat = favCatName;
         mOldKeyword = keyword;
 
